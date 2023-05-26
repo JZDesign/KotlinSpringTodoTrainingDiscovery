@@ -1,5 +1,9 @@
 package com.JZDesign.todo.services
 
+import com.JZDesign.todo.service.TodoCreationFailedException
+import com.JZDesign.todo.service.TodoItem
+import com.JZDesign.todo.service.TodoManaging
+import com.JZDesign.todo.service.TodoService
 import com.JZDesign.todo.storage.TodoStorageObject
 import com.JZDesign.todo.storage.TodoStoring
 import com.JZDesign.todo.storage.UpdateTodoStorageObject
@@ -72,7 +76,7 @@ class TodoServiceTest {
         justRun { storage.create(any(), any()) }
         every { storage.get(any(), any()) }.returns(null)
 
-        assertThrows<TodoService.TodoCreationFailedException> { subject.create("1", "", 1) }
+        assertThrows<TodoCreationFailedException> { subject.create("1", "", 1) }
     }
 
     private fun makeSUT(dateTimeProvider: () -> OffsetDateTime = OffsetDateTime::now): Pair<TodoManaging, TodoStoring> {
@@ -80,50 +84,3 @@ class TodoServiceTest {
         return TodoService(storage, dateTimeProvider) to storage
     }
 }
-
-interface TodoManaging {
-    fun getAllTodosForUser(userId: Int): List<TodoItem>
-    fun update(updateTodo: UpdateTodoStorageObject, userId: Int): TodoItem?
-    fun create(todoId: String, content: String, userId: Int): TodoItem
-
-    // TODO: Add delete when users need it.
-}
-
-class TodoService(
-    private val storage: TodoStoring,
-    private val dateTimeProvider: () -> OffsetDateTime = { OffsetDateTime.now() }
-) : TodoManaging {
-
-    override fun getAllTodosForUser(userId: Int) = storage.getAllForUser(userId).map(::convert)
-
-    override fun update(updateTodo: UpdateTodoStorageObject, userId: Int) =
-        storage.update(updateTodo, userId)
-            .let { storage.get(updateTodo.id, userId) }
-            ?.let(::convert)
-
-    override fun create(todoId: String, content: String, userId: Int): TodoItem {
-        val date = dateTimeProvider()
-        storage.create(
-            todoStorageObject = TodoStorageObject(todoId, content, false, date, date),
-            userId = userId
-        )
-        return storage.get(todoId, userId)?.let(::convert) ?: throw TodoCreationFailedException()
-    }
-
-    fun convert(storageObject: TodoStorageObject): TodoItem =
-        TodoItem(
-            storageObject.id,
-            storageObject.updatedAt,
-            storageObject.content,
-            storageObject.completed,
-        )
-
-    class TodoCreationFailedException: RuntimeException()
-}
-
-data class TodoItem(
-    val id: String,
-    val updatedAt: OffsetDateTime,
-    val content: String,
-    val completed: Boolean,
-)
