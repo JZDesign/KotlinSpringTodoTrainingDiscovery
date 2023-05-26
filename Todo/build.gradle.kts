@@ -21,8 +21,12 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     runtimeOnly("com.h2database:h2")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.willowtreeapps.assertk:assertk:0.26.1")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(module = "mockito-core") // May include this later…
+    }
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
+
 }
 
 tasks.withType<KotlinCompile> {

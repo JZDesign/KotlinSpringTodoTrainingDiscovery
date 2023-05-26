@@ -19,7 +19,11 @@ import org.junit.jupiter.api.assertThrows
 interface TodoStoreSpec {
     val subject: TodoStoring
 
-    fun cleanUp()
+    /**
+     * Override if the test data needs cleanup after all the tests are complete
+     */
+    fun cleanUp() {}
+
     @BeforeEach
     fun setup()
 
