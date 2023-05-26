@@ -7,7 +7,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
+import org.springframework.stereotype.Component
 
+@Component
 class TodoFileStore : TodoStoring {
     override fun getAllForUser(userId: Int): List<TodoStorageObject> =
         try {

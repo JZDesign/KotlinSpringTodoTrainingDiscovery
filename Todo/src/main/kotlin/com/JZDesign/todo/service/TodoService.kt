@@ -4,7 +4,9 @@ import com.JZDesign.todo.storage.TodoStorageObject
 import com.JZDesign.todo.storage.TodoStoring
 import com.JZDesign.todo.storage.UpdateTodoStorageObject
 import java.time.OffsetDateTime
+import org.springframework.stereotype.Component
 
+@Component
 class TodoService(
     private val storage: TodoStoring,
     private val dateTimeProvider: () -> OffsetDateTime = { OffsetDateTime.now() }
