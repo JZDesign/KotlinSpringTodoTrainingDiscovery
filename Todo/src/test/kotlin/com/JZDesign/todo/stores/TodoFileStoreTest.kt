@@ -70,11 +70,11 @@ class TodoFileStore {
     }
 
     companion object {
-        val serializer = ObjectMapper()
+        val serializer: ObjectMapper = ObjectMapper()
             .registerKotlinModule()
             .registerModule(JavaTimeModule())
 
-        fun rootDirectory(): String =
+        private fun rootDirectory(): String =
             ClassLoader
                 .getSystemClassLoader()
                 .getResource(".")?.file
