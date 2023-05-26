@@ -7,9 +7,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.OffsetDateTime
+import java.util.UUID
 import kotlin.IllegalStateException
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -104,31 +106,52 @@ class TodoFileStoreTest {
             subject.update(UpdateTodoStorageObject("update-create", OffsetDateTime.now(), "new content"), userId = 1)
         }
     }
+
+    @Test
+    fun `delete does not throw if the item is not found`() {
+        assertDoesNotThrow { subject.delete(UUID.randomUUID().toString(), 1) }
+    }
+
+    @Test
+    fun `delete removes the todo from the store`() {
+        val id = "todo-to-delete"
+        subject.create(newTodo(id, "content"), 1)
+        subject.delete(id, 1)
+        assertThat(subject.get(id, 1)).isNull()
+    }
 }
 
-class TodoFileStore {
+interface TodoStoring {
+    fun getAllForUser(userId: Int): List<TodoStorageObject>
+    fun get(todoId: String, userId: Int): TodoStorageObject?
+    fun create(todoStorageObject: TodoStorageObject, userId: Int)
+    fun delete(todoId: String, userId: Int)
+    fun update(updateObject: UpdateTodoStorageObject, userId: Int)
+}
 
-    fun getAllForUser(userId: Int): List<TodoStorageObject> =
+class TodoFileStore : TodoStoring {
+
+    override fun getAllForUser(userId: Int): List<TodoStorageObject> =
         try {
             serializer.readValue(fileFor(userId))
         } catch (e: Exception) {
             emptyList()
         }
 
-    fun get(todoId: String, userId: Int): TodoStorageObject? =
+    override fun get(todoId: String, userId: Int): TodoStorageObject? =
         try {
             getAllForUser(userId).firstOrNull { it.id == todoId }
         } catch (e: Exception) {
             null
         }
 
-    fun create(todoStorageObject: TodoStorageObject, userId: Int) {
+    override fun create(todoStorageObject: TodoStorageObject, userId: Int) {
         val todos: List<TodoStorageObject> = getAllForUser(userId)
         if (todos.map { it.id }.contains(todoStorageObject.id)) throw CollisionException()
         fileFor(userId).writeText(serializer.writeValueAsString(todos.plus(todoStorageObject).toSet()))
     }
 
-    fun update(updateObject: UpdateTodoStorageObject, userId: Int) {
+    override fun update(updateObject: UpdateTodoStorageObject, userId: Int) {
         val todos = getAllForUser(userId).toMutableList()
         val todo = todos.firstOrNull { it.id == updateObject.id } ?: throw TodoNotFoundException()
 
@@ -145,6 +168,12 @@ class TodoFileStore {
             )
         )
         fileFor(userId).writeText(serializer.writeValueAsString(todos.toSet()))
+    }
+
+    override fun delete(todoId: String, userId: Int) {
+        val todos = getAllForUser(userId).toMutableList()
+        todos.removeIf { it.id == todoId }
+        fileFor(userId).writeText(serializer.writeValueAsString(todos))
     }
 
     companion object {
