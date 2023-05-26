@@ -8,6 +8,7 @@ import com.JZDesign.todo.storage.UpdateTodoStorageObject
 import java.time.OffsetDateTime
 import java.util.UUID
 import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -17,15 +18,20 @@ import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 interface TodoStoreSpec {
-    val subject: TodoStoring
+    var subject: TodoStoring
+
+    fun makeSubject(): TodoStoring
 
     /**
      * Override if the test data needs cleanup after all the tests are complete
      */
     fun cleanUp() {}
 
+
     @BeforeEach
-    fun setup()
+    fun setup() {
+        subject = makeSubject()
+    }
 
     @AfterAll
     fun tearDown() {
@@ -125,7 +131,18 @@ interface TodoStoreSpec {
         val id = "todo-to-delete"
         subject.create(newTodo(id, "content"), 1)
         subject.delete(id, 1)
-        Assertions.assertThat(subject.get(id, 1)).isNull()
+        assertThat(subject.get(id, 1)).isNull()
+    }
+
+    @Test
+    fun `shares stored data between instances`() {
+        val id = "some id"
+        subject.create(TodoStorageObject(id, "", false, OffsetDateTime.MIN, OffsetDateTime.MIN), 900)
+
+        val newSubject = makeSubject()
+
+        assertThat(subject === newSubject).isFalse()
+        assertThat(newSubject.get(id, userId = 900)).isEqualTo(subject.get(id, 900))
     }
 
     fun newTodo(id: String, content: String): TodoStorageObject {

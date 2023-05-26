@@ -7,10 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 class TodoFileStoreTest : TodoStoreSpec {
     override lateinit var subject: TodoStoring
 
-    @BeforeEach
-    override fun setup() {
-        subject = TodoFileStore()
-    }
+    override fun makeSubject(): TodoStoring = TodoFileStore()
 
     override fun cleanUp() {
         File(TodoFileStore.rootDirectory()).deleteRecursively()
