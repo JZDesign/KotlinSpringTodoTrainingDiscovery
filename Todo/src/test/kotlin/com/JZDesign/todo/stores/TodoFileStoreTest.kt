@@ -61,7 +61,7 @@ class TodoFileStoreTest {
     fun `create throws a CollisionException when a todo with the same ID comes in`() {
         subject.create(newTodo("12345", ""), 1)
 
-        assertThrows<TodoFileStore.CollisionException> {
+        assertThrows<CollisionException> {
             subject.create(newTodo("12345", ""), 1)
         }
     }
@@ -84,6 +84,25 @@ class TodoFileStoreTest {
                 completed = true
             )
         )
+    }
+
+    @Test
+    fun `update throws collision if the update is older than the stored update time`() {
+        val todo = newTodo("update-collision", "")
+        val updateTime = OffsetDateTime.MIN
+        subject.create(todo, userId = 1)
+        subject.update(UpdateTodoStorageObject("update-collision", OffsetDateTime.now(), "new content"), userId = 1)
+
+        assertThrows<CollisionException> {
+            subject.update(UpdateTodoStorageObject("update-collision", updateTime, "more new content"), userId = 1)
+        }
+    }
+
+    @Test
+    fun `update will throw a not found exception if the record doesn't exist`() {
+        assertThrows<TodoNotFoundException> {
+            subject.update(UpdateTodoStorageObject("update-create", OffsetDateTime.now(), "new content"), userId = 1)
+        }
     }
 }
 
@@ -111,7 +130,12 @@ class TodoFileStore {
 
     fun update(updateObject: UpdateTodoStorageObject, userId: Int) {
         val todos = getAllForUser(userId).toMutableList()
-        val todo = todos.first { it.id == updateObject.id }
+        val todo = todos.firstOrNull { it.id == updateObject.id } ?: throw TodoNotFoundException()
+
+        if (todo.updatedAt.toEpochSecond() > updateObject.updatedAt.toEpochSecond()) {
+            throw CollisionException()
+        }
+
         todos.remove(todo)
         todos.add(
             todo.copy(
@@ -151,8 +175,9 @@ class TodoFileStore {
 
     }
 
-    class CollisionException : IllegalStateException()
 }
+class CollisionException : IllegalStateException()
+class TodoNotFoundException : RuntimeException()
 
 data class TodoStorageObject(
     val id: String,
