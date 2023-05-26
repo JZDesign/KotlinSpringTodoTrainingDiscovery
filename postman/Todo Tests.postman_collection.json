@@ -1,0 +1,233 @@
+{
+	"info": {
+		"_postman_id": "7c41a7d5-cd13-447c-b09b-f57db9e26a80",
+		"name": "Todo Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21579339"
+	},
+	"item": [
+		{
+			"name": "Should get an empty list on first get request for a user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"",
+							"const userId = Math.floor(Math.random() * 500)",
+							"pm.environment.set(\"userId\", userId);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Should get an empty response on first request for a user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.eql([]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/user/{{userId}}/todos",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"{{userId}}",
+						"todos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a todo",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const guid = '{{$guid}}'",
+							"pm.environment.set(\"todoId\", guid);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"should get back a new todo and it should be incomplete\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.completed).to.eql(false);",
+							"    pm.environment.set(\"todoId\", jsonData.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"todoId\": \"{{todoId}}\",\n    \"content\": \"{{$randomBs}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/user/{{userId}}/todos",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"{{userId}}",
+						"todos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Should get the todos",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Should get an empty response on first request for a user\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.length).to.eql(1);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/user/{{userId}}/todos",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"{{userId}}",
+						"todos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create a todo Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"should get back a new todo and it should be incomplete\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.completed).to.eql(false);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{todoId}}\",\n    \"content\": \"{{$randomBs}}\",\n    \"updatedAt\": \"{{$timestamp}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/user/{{userId}}/todos",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"{{userId}}",
+						"todos"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "localhost:8080"
+		}
+	]
+}
