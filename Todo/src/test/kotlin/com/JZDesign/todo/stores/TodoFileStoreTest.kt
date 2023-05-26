@@ -5,19 +5,14 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.io.File
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.TestInstance
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TodoFileStoreTest {
 
-    lateinit var subject: TodoFileStore
-
-    @BeforeEach
-    fun setup() {
-        subject = TodoFileStore()
-    }
-
-    @AfterEach
+    val subject = TodoFileStore()
+    @AfterAll
     fun tearDown() {
         TodoFileStore.cleanUp()
     }
@@ -79,14 +74,14 @@ class TodoFileStore {
             .registerKotlinModule()
             .registerModule(JavaTimeModule())
 
-        fun rootDirectory(): String {
-            val loader = ClassLoader.getSystemClassLoader()
-            return loader.getResource(".")?.file ?: loader.name ?: "/dev/null"
-        }
+        fun rootDirectory(): String =
+            ClassLoader
+                .getSystemClassLoader()
+                .getResource(".")?.file
+                ?: "/dev/null"
 
         fun fileFor(userId: Int): File {
             val file = File(rootDirectory(), "user$userId-todos.json")
-            println(file.absolutePath)
             file.createNewFile()
             return file
         }
