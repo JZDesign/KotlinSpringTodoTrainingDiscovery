@@ -27,18 +27,20 @@ class TodoFileStore {
             .registerKotlinModule()
             .registerModule(JavaTimeModule())
 
-//        fun fileFor(userId: Int) = try {
-//            File("/dev/null/user/$userId/todos").also {
-//                it.mkdirs()
-//            }
-//        } catch (e: FileNotFoundException) {
-//            null
-//        }
+        fun fileFor(userId: Int) = try {
+            File(ClassLoader.getSystemClassLoader().getResource(".")!!.file, "/user$userId-todos.json")
+                .also { it.createNewFile() }
+        } catch (e: FileNotFoundException) {
+            null
+        }
     }
 
-    fun get(todoId: String, userId: Int): TodoStorageObject? = null
-//        fileFor(userId)
-//            ?.let { serializer.readValue(it, TodoStorageObject::class.java) }
+    fun get(todoId: String, userId: Int): TodoStorageObject? = try {
+        fileFor(userId)
+            ?.let { serializer.readValue(it, TodoStorageObject::class.java) }
+    } catch (e: Exception) {
+        null
+    }
 
 }
 
