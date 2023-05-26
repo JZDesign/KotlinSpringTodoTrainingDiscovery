@@ -1,7 +1,8 @@
 package com.JZDesign.todo.controller
 
+import com.JZDesign.todo.service.CreateTodoRequest
 import com.JZDesign.todo.service.TodoManaging
-import com.JZDesign.todo.storage.UpdateTodoStorageObject
+import com.JZDesign.todo.service.UpdateTodoRequest
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,15 +23,11 @@ class TodoController(
     fun createTodo(
         @PathVariable userId: Int,
         @RequestBody request: CreateTodoRequest
-    ) = todoManager.create(request.todoId, request.content, userId)
-
+    ) = todoManager.create(request, userId)
 
     @PutMapping("/user/{userId}/todos")
     fun updateTodo(
         @PathVariable userId: Int,
-        @RequestBody request: UpdateTodoStorageObject // TODO insulate controller from DTO models!!!!
+        @RequestBody request: UpdateTodoRequest
     ) = todoManager.update(request, userId)
-
 }
-
-data class CreateTodoRequest(val todoId: String, val content: String)

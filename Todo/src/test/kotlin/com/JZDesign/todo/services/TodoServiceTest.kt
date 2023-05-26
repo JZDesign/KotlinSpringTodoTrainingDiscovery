@@ -1,9 +1,11 @@
 package com.JZDesign.todo.services
 
+import com.JZDesign.todo.service.CreateTodoRequest
 import com.JZDesign.todo.service.TodoCreationFailedException
 import com.JZDesign.todo.service.TodoItem
 import com.JZDesign.todo.service.TodoManaging
 import com.JZDesign.todo.service.TodoService
+import com.JZDesign.todo.service.UpdateTodoRequest
 import com.JZDesign.todo.storage.TodoStorageObject
 import com.JZDesign.todo.storage.TodoStoring
 import com.JZDesign.todo.storage.UpdateTodoStorageObject
@@ -33,7 +35,6 @@ class TodoServiceTest {
         assertThat(subject.getAllTodosForUser(1)).isEmpty()
     }
 
-
     @Test
     fun `update invokes the storage object and returns the changed item`() {
         val (subject, storage) = makeSUT()
@@ -41,9 +42,10 @@ class TodoServiceTest {
         justRun { storage.update(any(), any()) }
         every { storage.get(any(), any()) }.returns(sampleTodoStorageObject)
 
+        val updateRequest = UpdateTodoRequest("1", OffsetDateTime.MIN, content = "This is a test")
         val updateObject = UpdateTodoStorageObject("1", OffsetDateTime.MIN, content = "This is a test")
 
-        assertThat(subject.update(updateObject, 1))
+        assertThat(subject.update(updateRequest, 1))
             .isEqualTo(sampleTodo)
 
         verify {
@@ -61,7 +63,7 @@ class TodoServiceTest {
         every { storage.get(any(), any()) }.returns(sampleTodoStorageObject)
 
 
-        assertThat(subject.create("1", "this is a test", 1))
+        assertThat(subject.create(CreateTodoRequest("1", "this is a test"), 1))
             .isEqualTo(sampleTodo)
 
         verify {
@@ -76,7 +78,7 @@ class TodoServiceTest {
         justRun { storage.create(any(), any()) }
         every { storage.get(any(), any()) }.returns(null)
 
-        assertThrows<TodoCreationFailedException> { subject.create("1", "", 1) }
+        assertThrows<TodoCreationFailedException> { subject.create(CreateTodoRequest("1", ""), 1) }
     }
 
     private fun makeSUT(dateTimeProvider: () -> OffsetDateTime = OffsetDateTime::now): Pair<TodoManaging, TodoStoring> {

@@ -14,18 +14,18 @@ class TodoService(
 
     override fun getAllTodosForUser(userId: Int) = storage.getAllForUser(userId).map(::convert)
 
-    override fun update(updateTodo: UpdateTodoStorageObject, userId: Int) =
-        storage.update(updateTodo, userId)
+    override fun update(updateTodo: UpdateTodoRequest, userId: Int) =
+        storage.update(updateTodo.toStorageObject(), userId)
             .let { storage.get(updateTodo.id, userId) }
             ?.let(::convert)
 
-    override fun create(todoId: String, content: String, userId: Int): TodoItem {
+    override fun create(request: CreateTodoRequest, userId: Int): TodoItem {
         val date = dateTimeProvider()
         storage.create(
-            todoStorageObject = TodoStorageObject(todoId, content, false, date, date),
+            todoStorageObject = TodoStorageObject(request.todoId, request.content, false, date, date),
             userId = userId
         )
-        return storage.get(todoId, userId)?.let(::convert) ?: throw TodoCreationFailedException()
+        return storage.get(request.todoId, userId)?.let(::convert) ?: throw TodoCreationFailedException()
     }
 
     fun convert(storageObject: TodoStorageObject): TodoItem =
@@ -36,4 +36,14 @@ class TodoService(
             storageObject.completed,
         )
 
+    fun UpdateTodoRequest.toStorageObject() = UpdateTodoStorageObject(id, updatedAt, content, completed)
 }
+
+data class UpdateTodoRequest(
+    val id: String,
+    val updatedAt: OffsetDateTime,
+    val content: String? = null,
+    val completed: Boolean? = null,
+)
+
+data class CreateTodoRequest(val todoId: String, val content: String)
