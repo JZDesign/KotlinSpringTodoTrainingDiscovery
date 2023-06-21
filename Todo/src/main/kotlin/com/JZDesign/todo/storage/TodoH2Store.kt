@@ -11,13 +11,11 @@ interface TodoH2Repository : JpaRepository<TodoH2StorageObject, Int>
 class TodoH2Store(
     val db: TodoH2Repository
 ) : TodoStoring {
-    override fun getAllForUser(userId: Int): List<TodoStorageObject> {
-        return findAll(userId).map { it.toDAO() }
-    }
+    override fun getAllForUser(userId: Int): List<TodoStorageObject> =
+        findAll(userId).map { it.toDAO() }
 
-    override fun get(todoId: String, userId: Int): TodoStorageObject? {
-        return getAllForUser(userId).firstOrNull { it.id == todoId }
-    }
+    override fun get(todoId: String, userId: Int): TodoStorageObject? =
+        getAllForUser(userId).firstOrNull { it.id == todoId }
 
     override fun create(todoStorageObject: TodoStorageObject, userId: Int) {
         if (get(todoStorageObject.id, userId) != null) {
@@ -34,20 +32,21 @@ class TodoH2Store(
     }
 
     override fun update(updateObject: UpdateTodoStorageObject, userId: Int) {
-        findAll(userId).firstOrNull { it.todoId == updateObject.id }?.run {
+        findAll(userId)
+            .firstOrNull { it.todoId == updateObject.id }
+            ?.run {
+                if (updateObject.updatedAt < this.updatedAt) {
+                    throw CollisionException()
+                }
 
-            if (updateObject.updatedAt < this.updatedAt) {
-                throw CollisionException()
-            }
-
-            var updates = this
-                .copy(
+                var updates = copy(
                     completed = updateObject.completed ?: completed,
                     content = updateObject.content ?: content,
                     updatedAt = updateObject.updatedAt
                 )
-            db.save(updates)
-        } ?: throw TodoNotFoundException()
+                db.save(updates)
+            }
+            ?: throw TodoNotFoundException()
     }
 
     fun findAll(userId: Int) = db.findAll().filter { it.user_id == userId }
