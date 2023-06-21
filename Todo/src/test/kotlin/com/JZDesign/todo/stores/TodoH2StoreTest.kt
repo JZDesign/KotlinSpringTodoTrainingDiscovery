@@ -18,6 +18,4 @@ class TodoH2DatabaseStoreTest : TodoStoreSpec {
     lateinit var db: TodoH2Repository
     override fun makeSubject(): TodoStoring = TodoH2Store(db)
 
-    override fun cleanUp() {
-    }
 }
