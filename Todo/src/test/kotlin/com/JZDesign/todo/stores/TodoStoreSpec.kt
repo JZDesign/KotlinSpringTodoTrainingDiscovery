@@ -7,7 +7,6 @@ import com.JZDesign.todo.storage.TodoStoring
 import com.JZDesign.todo.storage.UpdateTodoStorageObject
 import java.time.OffsetDateTime
 import java.util.UUID
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +26,6 @@ interface TodoStoreSpec {
      */
     fun cleanUp() {}
 
-
     @BeforeEach
     fun setup() {
         subject = makeSubject()
@@ -40,7 +38,7 @@ interface TodoStoreSpec {
 
     @Test
     fun `getAll returns an empty list for a new user`() {
-        Assertions.assertThat(subject.getAllForUser(99)).isEmpty()
+        assertThat(subject.getAllForUser(99)).isEmpty()
     }
 
     @Test
@@ -53,12 +51,12 @@ interface TodoStoreSpec {
 
         todos.forEach { subject.create(it, 9) }
 
-        Assertions.assertThat(subject.getAllForUser(9).count()).isEqualTo(3)
+        assertThat(subject.getAllForUser(9).count()).isEqualTo(3)
     }
 
     @Test
     fun `get by id returns null when item is not found`() {
-        Assertions.assertThat(subject.get("my-todo-id-1", 1)).isNull()
+        assertThat(subject.get("my-todo-id-1", 1)).isNull()
     }
 
     @Test
@@ -69,7 +67,7 @@ interface TodoStoreSpec {
         subject.create(newTodo("my-todo-id-2", ""), 1)
         subject.create(newTodo("my-todo-id-3", ""), 1)
 
-        Assertions.assertThat(subject.get("my-todo-id-1", 1))
+        assertThat(subject.get("my-todo-id-1", 1))
             .isEqualTo(firstTodo)
     }
 
@@ -88,12 +86,12 @@ interface TodoStoreSpec {
         val updateTime = OffsetDateTime.now()
         subject.create(todo, userId = 1)
         subject.update(UpdateTodoStorageObject("1", updateTime, "new content"), userId = 1)
-        Assertions.assertThat(subject.get("1", 1)).isEqualTo(todo.copy(updatedAt = updateTime, content = "new content"))
+        assertThat(subject.get("1", 1)).isEqualTo(todo.copy(updatedAt = updateTime, content = "new content"))
 
 
         val newUpdatedTime = OffsetDateTime.now()
         subject.update(UpdateTodoStorageObject("1", newUpdatedTime, completed = true), userId = 1)
-        Assertions.assertThat(subject.get("1", 1)).isEqualTo(
+        assertThat(subject.get("1", 1)).isEqualTo(
             todo.copy(
                 updatedAt = newUpdatedTime,
                 content = "new content",
