@@ -152,7 +152,7 @@
 			"response": []
 		},
 		{
-			"name": "Create a todo Copy",
+			"name": "Update a todo",
 			"event": [
 				{
 					"listen": "prerequest",
