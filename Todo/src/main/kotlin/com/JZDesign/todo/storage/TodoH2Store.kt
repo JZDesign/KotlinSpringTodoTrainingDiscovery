@@ -49,7 +49,8 @@ class TodoH2Store(
             ?: throw TodoNotFoundException()
     }
 
-    fun findAll(userId: Int) = db.findAll().filter { it.user_id == userId }
+    fun findAll(userId: Int) =
+        db.findAll().filter { it.user_id == userId }
 
     fun TodoStorageObject.toDAO(userId: Int) =
         TodoH2StorageObject(
